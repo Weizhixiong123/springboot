@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Of Customer</title>
+<link href="/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/font-awesome.css" rel="stylesheet">
+<link href="/css/style.css" rel="stylesheet">
+<link href="/css/bootstrap-select.css" rel="stylesheet">
+<link href="/css/dataTables.bootstrap.css" rel="stylesheet">
+<link href="/css/ion.rangeSlider.css" rel="stylesheet">
+<link href="/css/zTreeStyle.css" rel="stylesheet">
+<link href="/css/bootstrap-datetimepicker.css" rel="stylesheet">
+<script src="/js/jquery.js"></script>
+<script src="/js/layer/layer.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/content.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.js" type="text/javascript" charset="UTF-8"></script>
+<script src="/js/bootstrap-datetimepicker.zh-CN.js" type="text/javascript" charset="UTF-8"></script>
+<script src="/js/jquery.ztree.core.js"></script>
+<script src="/js/bootstrap-select.min.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/dataTables.js"></script>
+<script src="/js/dataTables.bootstrap.js"></script>
+<script src="/js/area.js"></script>
+<script src="/js/ion.rangeSlider.min.js"></script>
+</head>
+<body class="gray-bg">
+	<div class="wrapper-content float-e-margins">
+		<div class="ibox-content">
+			<form method="post" class="form-horizontal" id="FormContent">
+				<div class="form-group">
+					<label class="col-sm-2 control-label">TextBox</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" name="name" />
+					</div>
+					<label class="col-sm-2 control-label">DropdownList</label>
+					<div class="col-sm-4">
+						<select class="selectpicker" data-live-search="true" name="trade" data-style="btn-white">
+							<option value="select1">金融</option>
+							<option value="select2">IT</option>
+							<option value="select3">医疗</option>
+							<option value="select4">冶金</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">CheckBoxList</label>
+					<div class="col-sm-4 clickinput">
+						<input type="hidden" name="trade" />
+						<label><input type="checkbox" class="checkboxValue" value="CRM" />CRM</label>
+						<label><input type="checkbox" class="checkboxValue" value="ERP" />ERP</label>
+						<label><input type="checkbox" class="checkboxValue" value="OA" />OA</label>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-12 textaligncenter">
+							<a class="btn btn-w-m btn-default" href="/Customer/Index">Back</a>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+</html>
+<script>
+	$.ajax({
+    	type: "GET",
+    	url: "/Customer/GetSingle/?id="+GetQueryString("id"),
+    	dataType: "JSON",
+    	success: function (data) {
+	        $("[name='name']").val(data[0]["name"]);    
+        	$("[name='trade']").selectpicker('val', data[0]["trade"]);
+    	    $("[name='ex_DateBox']").val(formatDateTime(data[0]["ex_DateBox"]));
+	        $("[name='ex_TextArea']").val(data[0]["ex_TextArea"]);
+   		
+        	if (data[0]["trade"] != null && data[0]["trade"] != "") {
+	            var strs = new Array();
+            	strs = data[0]["trade"].split(",");
+            	$.each(strs, function (i, item) {
+	                $(".checkboxValue[value=" + item + "]").attr("checked", "checked");
+            	});
+            	$("[name='trade']").val(data[0]["trade"]);
+        	}
+        	else {
+	            $("[name='trade']").val("");
+        	}
+    	}
+	});	
+
+    $(".checkboxValue").change(function () {
+        var chk_value = [];
+        $('.checkboxValue:checked').each(function () {
+            chk_value.push(($(this).val()));
+        });
+        $("[name='trade']").val(chk_value);
+    });
+
+</script>

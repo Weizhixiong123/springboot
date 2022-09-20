@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>List Of TreeForm</title>
+<link href="/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/font-awesome.css" rel="stylesheet">
+<link href="/css/style.css" rel="stylesheet">
+<link href="/css/bootstrap-select.css" rel="stylesheet">
+<link href="/css/dataTables.bootstrap.css" rel="stylesheet">
+<link href="/css/ion.rangeSlider.css" rel="stylesheet">
+<link href="/css/zTreeStyle.css" rel="stylesheet">
+<link href="/css/bootstrap-datetimepicker.css" rel="stylesheet">
+<script src="/js/jquery.js"></script>
+<script src="/js/layer/layer.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/content.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.js" type="text/javascript" charset="UTF-8"></script>
+<script src="/js/bootstrap-datetimepicker.zh-CN.js" type="text/javascript" charset="UTF-8"></script>
+<script src="/js/jquery.ztree.core.js"></script>
+<script src="/js/bootstrap-select.min.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/dataTables.js"></script>
+<script src="/js/dataTables.bootstrap.js"></script>
+<script src="/js/area.js"></script>
+<script src="/js/ion.rangeSlider.min.js"></script>
+</head>
+<body class="gray-bg">
+	<div class="wrapper-content float-e-margins">
+		<div class="col-sm-3">
+			<div class="ibox-content">
+				<ul id="tree" class="ztree"></ul>
+			</div>
+		</div>
+		<div class="col-sm-9">
+			<div class="ibox-content">
+            	<div class="floatleft marginright">
+                	<a class="btn btn-w-m btn-primary" onclick="openLayerForm()">Add</a>
+            	</div>
+            	<div class="hr-line-dashed clearboth"></div>
+            	<table id="ViewTable" class="display"></table>
+        	</div>
+		</div>
+	</div>
+</body>
+</html>
+<script type="text/javascript" th:inline="javascript">
+	var zNodes = /*[(${TreeContent})]*/
+	$.fn.zTree.init($("#tree"), null, zNodes);
+	
+	$('#ViewTable').DataTable({
+	    bLengthChange: false,
+	    destroy: true,
+	    ajax: {
+	        url: "/TreeList/GetList?id="+GetQueryString("TreeID"),
+	        dataSrc: ""
+	    },
+	    columns: [
+	        {
+	            data: "id",
+	            sTitle: "id",
+	            visible: false
+	        },
+	        {
+	            sTitle: "ex_TextBox",
+	            mData: function (data) {
+	                return "<a onclick=openLayerForm('" + data.id + "')>" + data.ex_TextBox + "</a>";
+	            }
+	        },
+	        {
+	            data: "ex_DropdownList",
+	            sTitle: "ex_DropdownList"
+	        },
+	        {
+	            sClass: "text-right",
+	            sTitle: "Opration",
+	            bSortable: false,
+	            bSearchable: false,
+	            mData: function (data) {
+	                var button = '';
+	                button += "<a class='btn btn-sm btn-success' onclick=openLayerForm('" + data.id + "')>Modify</a>";
+	                return button;
+	            }
+	        }
+	    ]
+	});
+
+
+	function openLayerForm(id) {
+		var url = '';
+
+		if (id == null) {
+			if (GetQueryString("TreeID") != null) {
+				url = '/TreeList/Form?TreeID=' + GetQueryString("TreeID");
+			} else {
+				url = '/TreeList/Form?TreeID=0';
+			}
+		} else {
+			if (GetQueryString("TreeID") != null) {
+				url = '/TreeList/Form?id='+id+'&TreeID=' + GetQueryString("TreeID");
+			} else {
+				url = '/TreeList/Form?id='+id+'&?TreeID=0';
+			}
+		}
+
+		layer.open({
+			type : 2,
+			title : false,
+			shadeclose : true,
+			scrollbar : false,
+			shade : 0.7,
+			area : [ '94%', '90%' ],
+			content : url
+		})
+	}
+
+	function reloadDataTables() {
+		$('#ViewTable').DataTable().ajax.reload(null, false);
+	}
+</script>

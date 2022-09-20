@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Of Customer</title>
+<link href="/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/font-awesome.css" rel="stylesheet">
+<link href="/css/style.css" rel="stylesheet">
+<link href="/css/bootstrap-select.css" rel="stylesheet">
+<link href="/css/dataTables.bootstrap.css" rel="stylesheet">
+<link href="/css/ion.rangeSlider.css" rel="stylesheet">
+<link href="/css/zTreeStyle.css" rel="stylesheet">
+<link href="/css/bootstrap-datetimepicker.css" rel="stylesheet">
+<script src="/js/jquery.js"></script>
+<script src="/js/layer/layer.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/content.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.js" type="text/javascript" charset="UTF-8"></script>
+<script src="/js/bootstrap-datetimepicker.zh-CN.js" type="text/javascript" charset="UTF-8"></script>
+<script src="/js/jquery.ztree.core.js"></script>
+<script src="/js/bootstrap-select.min.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/dataTables.js"></script>
+<script src="/js/dataTables.bootstrap.js"></script>
+<script src="/js/area.js"></script>
+<script src="/js/ion.rangeSlider.min.js"></script>
+</head>
+<body class="gray-bg">
+	<div class="wrapper-content float-e-margins">
+		<div class="ibox-content">
+			<form method="post" class="form-horizontal" id="FormContent">
+				<div class="form-group">
+					<label class="col-sm-2 control-label">客户姓名</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" name="name" />
+					</div>
+					<label class="col-sm-2 control-label">客户行业</label>
+					<div class="col-sm-4">
+						<select class="selectpicker" data-live-search="true" name="trade" data-style="btn-white">
+							<option value="select1">金融</option>
+							<option value="select2">IT</option>
+							<option value="select3">医疗</option>
+							<option value="select4">冶金</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">感兴趣的产品</label>
+                    <div class="col-sm-4 clickinput">
+                        <input type="hidden" name="trade" />
+                        <label><input type="checkbox" class="checkboxValue" value="CRM" />CRM</label>
+                        <label><input type="checkbox" class="checkboxValue" value="ERP" />ERP</label>
+                        <label><input type="checkbox" class="checkboxValue" value="OA" />OA</label>
+                     </div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-12 textaligncenter">
+						<div id="UpdateGroup">
+							<a id="submit" class="btn btn-w-m btn-primary">Modify</a>
+							<a class="btn btn-w-m btn-default" href="/Customer/Index">Back</a>
+							<a class="btn btn-w-m btn-danger" onclick="Delete()">Delete</a>
+							</div>
+							<div id="InsertGroup">
+							<a id="submit" class="btn btn-w-m btn-primary">Create</a>
+							<a class="btn btn-w-m btn-default" href="/Customer/Index">Back</a>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+</html>
+<script>
+    if (GetQueryString("id") == null) {
+        $("[name='ex_DateBox']").val(getNowDateTime());
+        $("#UpdateGroup").remove();
+    }
+    else {
+    	$("#InsertGroup").remove();
+        $.ajax({
+            type: "GET",
+            url: "/Customer/GetSingle/?id="+GetQueryString("id"),
+            dataType: "JSON",
+            success: function (data) {
+                $("[name='name']").val(data[0]["name"]);    
+                $("[name='trade']").selectpicker('val', data[0]["trade"]);
+           		
+                if (data[0]["trade"] != null && data[0]["trade"] != "") {
+                    var strs = new Array();
+                    strs = data[0]["trade"].split(",");
+                    $.each(strs, function (i, item) {
+                        $(".checkboxValue[value=" + item + "]").attr("checked", "checked");
+                    });
+                    $("[name='trade']").val(data[0]["trade"]);
+                }
+                else {
+                    $("[name='trade']").val("");
+                }
+            }
+        });
+    }
+
+    $("[name='ex_DateBox']").datetimepicker({
+        format: 'yyyy-mm-dd',
+        language: 'zh-CN',
+        minView: 2,
+        autoclose: 1
+    });
+    
+    $(".checkboxValue").change(function () {
+        var chk_value = [];
+        $('.checkboxValue:checked').each(function () {
+            chk_value.push(($(this).val()));
+        });
+        $("[name='trade']").val(chk_value);
+    });
+
+	$("#submit").click(function() {
+		var submitPath = 'Insert';
+		if(GetQueryString("id")!=null){
+			submitPath = 'Update?id='+GetQueryString("id");
+		}
+		
+		if ($("#submit").attr("disabled") == "disabled") {
+			layer.msg("wait please...");
+		} else {
+			$("#submit").attr("disabled", true);
+			$.ajax({
+				type : "POST",
+				url : "/Customer/"+submitPath,
+				contentType : "application/json; charset=utf-8",
+				data : $('#FormContent').serializeObject(),
+				dataType : "Json",
+				complete : function(data) {
+					$("#submit").removeAttr("disabled");
+					if (data.responseText != 0) {
+						window.location.href="/Customer/Index";
+					} else {
+						layer.alert(data.responseText);
+					}
+				}
+			});
+
+		}
+	});
+	
+	 function Delete() {
+	        layer.confirm('are u sure？', {
+	            btn: ['Yes', 'No']
+	        },
+	        function () {
+	            $.get("/Customer/Delete?id="+GetQueryString("id"), function (data) {
+	                if (data != 0) {
+	                    window.location.href = '/Customer/Index';
+	                }
+	                else {
+	                    layer.msg(data);
+	                }
+	            });
+	        }, function () {
+	            layer.msg('Canceled');
+	        });
+	 };
+</script>
